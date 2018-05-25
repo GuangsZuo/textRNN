@@ -20,12 +20,10 @@ if __name__ == "__main__":
     pos["label"] = 1
 
     data = pd.concat([neg,pos]).sample(frac=1).reset_index(drop=True)
-    word_index = tokenize(data["text"], max_words, sentence_size)
-    train_data, test_data = word_index[:data.shape[0]-100], data[-100:]
-    train_data = pd.concat([train_data, data["label"][:data.shape[0]-100]])
-    test_data = pd.concat([train_data, data["label"][-100:]])
+    data["text"] = tokenize(data["text"], max_words, sentence_size)
+    train_data, test_data = data[:data.shape[0]-100], data[-100:]
 
-    word_embeding,max_words = get_word_embding(word_index, embeding_file, max_words, sentence_size)
+    word_embeding,max_words = get_word_embding(data["text"], embeding_file, max_words, sentence_size)
 
     algo = textrnn_algo(train_data, word_embeding, model_file, classes=1, sentence_length=sentence_size,
                         embed_size=embed_size, target_is_prob=False, word_size=max_words,
