@@ -13,6 +13,7 @@ def tokenize(corpus, max_words, max_len):
     tokenizer.fit_on_texts(corpus)
     words_index = tokenizer.texts_to_sequences(corpus)
     words_index = pad_sequences(words_index, maxlen=max_len)
+    return words_index
 
 def get_word_embding(word_index, embeding_file, max_words, embed_size, unk="something"):
     max_words = min(max_words, len(word_index)) + 1
