@@ -27,6 +27,8 @@ class textrnn_algo:
         else:
             self.batch_size = int(kwargs["batch_size"])
 
+        self.writer = tf.summary.FileWriter("./tflogs/", self.sess.graph)
+
     def model_train(self):
         x_train, y_train, x_val, y_val = self.split_train_data(self.data)
         for epoch in range(1, self.epoch+1):

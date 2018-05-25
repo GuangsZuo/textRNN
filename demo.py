@@ -23,7 +23,7 @@ if __name__ == "__main__":
     data["text"] = tokenize(data["text"], max_words, sentence_size)
     train_data, test_data = data[:data.shape[0]-100], data[-100:]
 
-    word_embeding,max_words = get_word_embding(data["text"], embeding_file, max_words, sentence_size)
+    word_embeding,max_words = get_word_embding(data["text"], embeding_file, max_words, embed_size)
 
     algo = textrnn_algo(train_data, word_embeding, model_file, classes=1, sentence_length=sentence_size,
                         embed_size=embed_size, target_is_prob=False, word_size=max_words,
