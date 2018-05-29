@@ -25,6 +25,8 @@ if __name__ == "__main__":
 
     word_embeding,max_words = get_word_embding(data["text"], embeding_file, max_words, embed_size)
 
+    print("preprocessing has finished.")
+
     algo = textrnn_algo(train_data, word_embeding, model_file, classes=1, sentence_length=sentence_size,
                         embed_size=embed_size, target_is_prob=False, word_size=max_words,
                         is_sigmoid_loss=True, learning_rate=1e-3, epoch=100, early_stopping_rounds=3,

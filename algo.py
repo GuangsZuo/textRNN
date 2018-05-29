@@ -29,6 +29,8 @@ class textrnn_algo:
 
         self.writer = tf.summary.FileWriter("./tflogs/", self.sess.graph)
 
+        print("model has been created.")
+
     def model_train(self):
         x_train, y_train, x_val, y_val = self.split_train_data(self.data)
         for epoch in range(1, self.epoch+1):
