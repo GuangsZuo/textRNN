@@ -63,6 +63,7 @@ class textrnn:
         with tf.variable_scope("load_embeding"):
             self.word_embeding = tf.get_variable("word_embeding",shape=(self.word_size, self.embed_size),
                                             dtype=tf.float32, initializer=tf.constant_initializer(embeding))
+
     def lstm(self):
         with tf.variable_scope("lstm_Cell"):
             lstm_cell = rnn.BasicLSTMCell(self.rnn_units, reuse=True)
@@ -74,11 +75,11 @@ class textrnn:
         with tf.variable_scope("bilstm_layer_1"):
             cell_fw = [self.lstm() for i in range(self.sentence_size)]
             cell_bw = [self.lstm() for i in range(self.sentence_size)]
-            h_states,_,_ = rnn.stack_bidirectional_rnn(cell_fw, cell_bw, features)
+            h_states,_,_ = rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, features)
         with tf.variable_scope("bilstm_layer_2"):
             cell_fw = [self.lstm() for i in range(self.sentence_size)]
             cell_bw = [self.lstm() for i in range(self.sentence_size)]
-            h_states, _, _ = rnn.stack_bidirectional_rnn(cell_fw, cell_bw, h_states) # (batch_size, sentence_size, num_units*2)
+            h_states, _, _ = rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, h_states) # (batch_size, sentence_size, num_units*2)
         with tf.variable_scope("pooling_layer"):
             maxpool_layer = tf.layers.max_pooling1d(pool_size=self.sentence_size, strides=1, padding="valid")(h_states)
             avepool_layer = tf.layers.average_pooling1d(pool_size=self.sentence_size, strides=1, padding="valid")(h_states)

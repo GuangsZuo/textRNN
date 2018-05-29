@@ -1,7 +1,7 @@
 from algo import textrnn_algo
 from text_processing import *
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]=""
 embeding_file="./glove.840B.300d.txt"
 embed_size = 300
 max_words = 20000
@@ -30,7 +30,7 @@ if __name__ == "__main__":
                         is_sigmoid_loss=True, learning_rate=1e-3, epoch=100, early_stopping_rounds=3,
                         batch_size=64)
     algo.model_train()
-    result = algo.model_predict()
+    result = algo.model_predict(test_data)
     print(result)
 
 
