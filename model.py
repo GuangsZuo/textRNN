@@ -17,7 +17,7 @@ class textrnn:
         self.word_size = word_size
         self.embed_size = embed_size
         self.input = tf.placeholder(tf.int32, shape=(None, sentence_length)) # feed word_index sequence
-        self.target = tf.placeholder(tf.float32, shape=(None, sentence_length, classes))
+        self.target = tf.placeholder(tf.float32, shape=(None, classes))
         self.sentence_size = sentence_length
         self.classes = classes
         self.is_sigmoid_loss = is_sigmoid_loss
@@ -65,8 +65,8 @@ class textrnn:
                                             dtype=tf.float32, initializer=tf.constant_initializer(embeding))
 
     def lstm(self):
-        with tf.variable_scope("lstm_Cell"):
-            lstm_cell = rnn.BasicLSTMCell(self.rnn_units, reuse=True)
+        with tf.variable_scope("lstm_Cell",reuse=tf.AUTO_REUSE):
+            lstm_cell = rnn.LSTMCell(self.rnn_units, reuse=tf.get_variable_scope().reuse)
         return lstm_cell
 
     def define_graph(self):
@@ -81,17 +81,20 @@ class textrnn:
             cell_bw = [self.lstm() for i in range(self.sentence_size)]
             h_states, _, _ = rnn.stack_bidirectional_dynamic_rnn(cell_fw, cell_bw, h_states, dtype=tf.float32) # (batch_size, sentence_size, num_units*2)
         with tf.variable_scope("pooling_layer"):
-            maxpool_layer = tf.layers.max_pooling1d(pool_size=self.sentence_size, strides=1, padding="valid")(h_states)
-            avepool_layer = tf.layers.average_pooling1d(pool_size=self.sentence_size, strides=1, padding="valid")(h_states)
+            maxpool_layer = tf.layers.MaxPooling1D(pool_size=self.sentence_size, strides=1, padding="valid")(h_states)
+            avepool_layer = tf.layers.AveragePooling1D(pool_size=self.sentence_size, strides=1, padding="valid")(h_states)
             # (batch_size, num_units*2)
+            print(maxpool_layer.shape, avepool_layer.shape)
         with tf.variable_scope("concat_layer"):
             concat_layer = tf.concat([maxpool_layer, avepool_layer], axis=1)
+            concat_layer = tf.reshape(concat_layer, [-1, self.rnn_units*4])
+            print(concat_layer.shape)
         with tf.variable_scope("fc_layer"):
             fc_layer = tf.layers.dense(concat_layer, self.fc_units, kernel_initializer=self.fc_kinit,
                                         activation=tf.nn.relu)
             self.logits = tf.layers.dense(fc_layer, self.classes, kernel_initializer=self.fc_kinit,
                                          activation=None)
-        with tf.varible_scope("output_layer"):
+        with tf.variable_scope("output_layer"):
             self.output = tf.sigmoid(self.logits) #TODO
 
     def define_loss(self):
@@ -109,5 +112,5 @@ class textrnn:
     def define_optimizer(self):
         with tf.variable_scope("optimize"):
             train_vars = tf.trainable_variables()
-            grads = self.optimizer.compute_gradients(self.loss, var_list=train_vars)
-            self.trainop = self.optimizer.apply_gradients(grads)
+            grads_vars = self.optimizer.compute_gradients(self.loss, var_list=train_vars)
+            self.trainop = self.optimizer.apply_gradients(grads_vars)

@@ -4,10 +4,10 @@ import numpy as np
 from model import textrnn
 
 class textrnn_algo:
-    def __init__(self, train_data, word_embeding, model_file,
+    def __init__(self, x_train, y_train, word_embeding, model_file,
                  classes, sentence_length, embed_size, target_is_prob, word_size,
                  is_sigmoid_loss=True, learning_rate=1e-3, optimizer=tf.train.AdamOptimizer, **kwargs):
-        self.data = train_data
+        self.data = (x_train, y_train)
         self.model = textrnn(classes, sentence_length, embed_size, target_is_prob, word_size,
                              is_sigmoid_loss, learning_rate, optimizer, word_embeding)
         self.sess = tf.Session()
@@ -33,6 +33,7 @@ class textrnn_algo:
 
     def model_train(self):
         x_train, y_train, x_val, y_val = self.split_train_data(self.data)
+        self.sess.run(tf.global_variables_initializer()) #TODO: move this to model
         for epoch in range(1, self.epoch+1):
             best_score = 2147483644
             bad_rounds = 0
@@ -71,9 +72,9 @@ class textrnn_algo:
 
     def split_train_data(self, data):
         from sklearn.model_selection import StratifiedKFold
-        skf = StratifiedKFold(nsplits=10)
-        train_index, val_index = skf.split(data["text"], data["label"])[0]
-        return data["text"][train_index], data["label"][train_index], data["text"][val_index], data["label"][val_index]
+        skf = StratifiedKFold(n_splits=10, shuffle=True)
+        for train_index, val_index in skf.split(data[0], data[1]):
+            return data[0][train_index], data[1][train_index], data[0][val_index], data[1][val_index]
 
     def model_predict(self, test_data, batch_size=1024):
         self.saver.restore(self.sess, self.model_file)
